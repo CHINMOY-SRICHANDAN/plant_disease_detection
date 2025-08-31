@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plant Disease Detector</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    #preview {
+      margin: 15px 0;
+      max-width: 300px;
+    }
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🌱 Plant Disease Detector</h2>
+  
+  <input type="file" id="fileInput" accept="image/*">
+  <img id="preview" src="" hidden>
+  
+  <button onclick="uploadFile()">Predict</button>
+  
+  <h3 id="result"></h3>
+
+  <script>
+    const preview = document.getElementById("preview");
+    const input = document.getElementById("fileInput");
+
+    input.addEventListener("change", () => {
+      const file = input.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.hidden = false;
+      }
+    });
+
+    async function uploadFile() {
+      const file = input.files[0];
+      if (!file) {
+        alert("Please upload an image first!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      document.getElementById("result").innerText = "⏳ Predicting...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:5000/predict", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        document.getElementById("result").innerText = "✅ Prediction: " + data.prediction;
+      } catch (err) {
+        console.error(err);
+        document.getElementById("result").innerText = "❌ Error making prediction.";
+      }
+    }
+  </script>
+</body>
+</html>
