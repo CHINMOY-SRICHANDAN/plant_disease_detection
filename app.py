@@ -4,9 +4,9 @@ import torchvision.transforms as transforms
 from torchvision import models
 from flask import Flask, request, jsonify
 from PIL import Image
-import os
 from flask_cors import CORS
 import json
+import os
 
 app = Flask(__name__)
 CORS(app)  # allow frontend requests
@@ -19,7 +19,7 @@ model = models.resnet50(pretrained=False)
 num_classes = 15  # change if your dataset has different count
 model.fc = nn.Linear(model.fc.in_features, num_classes)
 
-# load trained weights
+# load trained weights (now directly from root folder)
 model_path = "plant_disease_model.pth"
 state_dict = torch.load(model_path, map_location=device)
 model.load_state_dict(state_dict)
@@ -34,7 +34,7 @@ transform = transforms.Compose([
                          [0.229, 0.224, 0.225])
 ])
 
-# Load class names
+# Load class names (from root folder)
 with open("class_names.json", "r") as f:
     class_names = json.load(f)
 
