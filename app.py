@@ -22,7 +22,7 @@ num_classes = 15  # change if your dataset has different count
 model.fc = nn.Linear(model.fc.in_features, num_classes)
 
 # load trained weights
-model_path = "backend/plant_disease_model.pth"
+model_path = "plant_disease_model.pth"
 state_dict = torch.load(model_path, map_location=device)
 model.load_state_dict(state_dict)
 model.to(device)
@@ -39,7 +39,7 @@ transform = transforms.Compose([
 import json
 
 # Load class names
-with open("backend/class_names.json", "r") as f:
+with open("class_names.json", "r") as f:
     class_names = json.load(f)
 
 
