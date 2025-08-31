@@ -1,78 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plant Disease Detector</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🌱 Plant Disease Detector</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+      justify-content: center;
+      height: 100vh;
+      background: #f8f8f8;
     }
+    h1 { color: #2e7d32; }
     #preview {
-      margin: 15px 0;
       max-width: 300px;
+      margin: 10px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+    }
+    .result {
+      font-size: 1.2rem;
+      margin-top: 15px;
+      color: #333;
     }
     button {
       padding: 10px 20px;
-      cursor: pointer;
-      background: #4CAF50;
+      margin-top: 10px;
+      background: #2e7d32;
       color: white;
       border: none;
       border-radius: 5px;
+      cursor: pointer;
     }
+    button:hover { background: #1b5e20; }
   </style>
 </head>
 <body>
-  <h2>🌱 Plant Disease Detector</h2>
-  
-  <input type="file" id="fileInput" accept="image/*">
-  <img id="preview" src="" hidden>
-  
-  <button onclick="uploadFile()">Predict</button>
-  
-  <h3 id="result"></h3>
+  <h1>🌱 Plant Disease Detector</h1>
+  <input type="file" id="fileInput" accept="image/*" />
+  <br/>
+  <img id="preview" src="" alt="Preview" style="display:none;"/>
+  <br/>
+  <button onclick="uploadImage()">Predict</button>
+  <div class="result" id="result"></div>
 
   <script>
-    const preview = document.getElementById("preview");
-    const input = document.getElementById("fileInput");
+    const API_URL = "https://plant-disease-detection-o2pq.onrender.com/predict";
 
-    input.addEventListener("change", () => {
-      const file = input.files[0];
-      if (file) {
-        preview.src = URL.createObjectURL(file);
-        preview.hidden = false;
-      }
-    });
+    function uploadImage() {
+      const fileInput = document.getElementById("fileInput");
+      const resultDiv = document.getElementById("result");
 
-    async function uploadFile() {
-      const file = input.files[0];
-      if (!file) {
-        alert("Please upload an image first!");
+      if (!fileInput.files[0]) {
+        alert("Please select an image first!");
         return;
       }
 
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", fileInput.files[0]);
 
-      document.getElementById("result").innerText = "⏳ Predicting...";
-
-      try {
-        const res = await fetch("http://127.0.0.1:5000/predict", {
-          method: "POST",
-          body: formData
-        });
-
-        const data = await res.json();
-        document.getElementById("result").innerText = "✅ Prediction: " + data.prediction;
-      } catch (err) {
-        console.error(err);
-        document.getElementById("result").innerText = "❌ Error making prediction.";
-      }
+      fetch(API_URL, {
+        method: "POST",
+        body: formData,
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.prediction) {
+          resultDiv.innerHTML = `✅ Prediction: <b>${data.prediction}</b>`;
+        } else {
+          resultDiv.innerHTML = `⚠️ Error: ${data.error}`;
+        }
+      })
+      .catch(err => {
+        resultDiv.innerHTML = "❌ Request failed: " + err;
+      });
     }
+
+    // Preview selected image
+    document.getElementById("fileInput").addEventListener("change", function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const preview = document.getElementById("preview");
+          preview.src = e.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
   </script>
 </body>
 </html>
