@@ -5,13 +5,11 @@ from torchvision import models
 from flask import Flask, request, jsonify
 from PIL import Image
 import os
-
-from flask import Flask
 from flask_cors import CORS
+import json
 
 app = Flask(__name__)
 CORS(app)  # allow frontend requests
-
 
 # ----------- Load Model -------------
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -22,7 +20,7 @@ num_classes = 15  # change if your dataset has different count
 model.fc = nn.Linear(model.fc.in_features, num_classes)
 
 # load trained weights
-model_path = "plant_disease_model.pth"
+model_path = "backend/plant_disease_model.pth"
 state_dict = torch.load(model_path, map_location=device)
 model.load_state_dict(state_dict)
 model.to(device)
@@ -36,10 +34,8 @@ transform = transforms.Compose([
                          [0.229, 0.224, 0.225])
 ])
 
-import json
-
 # Load class names
-with open("class_names.json", "r") as f:
+with open("backend/class_names.json", "r") as f:
     class_names = json.load(f)
 
 
@@ -52,6 +48,7 @@ def predict_image(img_path):
         outputs = model(image)
         _, predicted = torch.max(outputs, 1)
         return class_names[predicted.item()]
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -72,6 +69,12 @@ def predict():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/", methods=["GET"])
+def home():
+    return "🚀 Plant Disease Detection API is live! Use POST /predict with an image."
+
 
 if __name__ == "__main__":
     app.run(debug=True)
